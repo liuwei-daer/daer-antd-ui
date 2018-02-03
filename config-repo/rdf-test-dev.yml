@@ -1,0 +1,20 @@
+server:
+  port: 8081
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    com.rdf.frontend: DEBUG
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8001/eureka/
+
+spring:
+  application:
+    name: rdf-frontend-test
+
+swagger:
+  enable: true
