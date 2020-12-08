@@ -15,9 +15,9 @@
         <div class="table-page-search-wrapper">
           <a-form layout="inline">
             <a-row :gutter="48">
-              <a-col :md="5" d:sm="15">
+              <a-col :md="7" d:sm="15">
                 <a-form-item label="用户名">
-                  <a-input placeholder="请输入" v-model="queryParam.loginName"/>
+                  <a-input placeholder="请输入" v-model="queryParam.userName"/>
                 </a-form-item>
               </a-col>
               <a-col :md="5" d:sm="15">
@@ -40,23 +40,24 @@
         </div>
         <div class="table-operator">
           <a-button v-if="addEnable" type="primary" icon="plus" @click="$refs.modal.add()">新建</a-button>
-          <a-dropdown v-if="removeEnable&& selectedRowKeys.length > 0">
-            <a-button type="danger" icon="delete" @click="delByIds(selectedRowKeys)">删除</a-button>
-          </a-dropdown>
         </div>
         <s-table
           size="default"
           ref="table"
+          rowKey="userId"
           :columns="columns"
           :data="loadData"
         >
+          <span slot="sex" slot-scope="text">
+            {{ text | sexFilter }}
+          </span>
           <span slot="status" slot-scope="text,record">
-            <a-switch :checked="record.status=='0'" @change="onChangeStatus(record)"/>
+            <a-switch checked-children="启用" un-checked-children="禁用" :checked="record.status=='0'" @change="onChangeStatus(record)"/>
           </span>
           <span slot="action" slot-scope="text, record">
             <a v-if="editEnabel" @click="handleEdit(record)">编辑</a>
             <a-divider type="vertical" />
-            <a v-if="removeEnable" @click="delByIds([record.userId])">删除</a>
+            <a v-if="removeEnable" @click="delById([record.userId])">删除</a>
             <a-divider type="vertical" />
             <a v-if="resetPwdEnabel" @click="resetPwd(record)">重置密码</a>
           </span>
@@ -71,7 +72,7 @@
 <script>
 import { STable, SearchTree } from '@/components'
 import { getUserList, delUser, changUserStatus } from '@/api/system/user'
-import { getDeptListEnable } from '@/api/system/dept'
+import { getDeptTree } from '@/api/system/dept'
 import UserModal from './UserModal'
 import UserPwdModal from './UserPwdModal'
 import pick from 'lodash.pick'
@@ -86,7 +87,6 @@ export default {
   },
   data () {
     return {
-      description: '列表使用场景：后台管理中的权限管理以及角色管理，可用于基于 RBAC 设计的角色权限控制，颗粒度细到每一个操作类型。',
       visible: false,
       labelCol: {
         xs: { span: 24 },
@@ -110,11 +110,16 @@ export default {
         },
         {
           title: '用户名',
-          dataIndex: 'loginName'
+          dataIndex: 'userName'
         },
         {
-          title: '昵称',
-          dataIndex: 'userName'
+          title: '邮箱',
+          dataIndex: 'email'
+        },
+        {
+          title: '性别',
+          dataIndex: 'sex',
+          scopedSlots: { customRender: 'sex' }
         },
         {
           title: '状态',
@@ -140,21 +145,28 @@ export default {
       expandedKeys: [],
       dataList: [],
       holderText: '搜索部门',
-      selectedRowKeys: [],
-      selectedRows: [],
       addEnable: checkPermission('system:user:add'),
       editEnabel: checkPermission('system:user:edit'),
       resetPwdEnabel: checkPermission('system:user:resetPwd'),
       removeEnable: checkPermission('system:user:remove')
     }
   },
+  filters: {
+    sexFilter (sex) {
+      const menuMap = {
+        '1': '男',
+        '2': '女',
+        '3': '未知'
+      }
+      return menuMap[sex]
+    }
+  },
   created () {
-    getDeptListEnable().then(res => {
-      const data = res.rows
+    getDeptTree().then(res => {
+      const data = res.data
       if (data.length > 0) {
         const min = Math.min(...data.map(m => m.parentId))
         this.buildtree(data, this.deptTree, min)
-        console.log(this.deptTree)
         this.expandedKeys = data.map(m => m.parentId)
         this.dataList = data.map(m => {
           return { key: m.deptId, title: m.deptName }
@@ -163,59 +175,46 @@ export default {
     })
   },
   methods: {
-    onSelectChange (selectedRowKeys) {
-      console.log('selectedRowKeys changed: ', selectedRowKeys)
-      this.selectedRowKeys = selectedRowKeys
-    },
     handleEdit (record) {
       this.$refs.modal.edit(record)
     },
     resetPwd (record) {
       this.$refs.pwdmodal.edit(record)
     },
-    onChange (selectedRowKeys, selectedRows) {
-      this.selectedRowKeys = selectedRowKeys
-      this.selectedRows = selectedRows
-    },
     handleOk () {
       this.$refs.table.refresh()
-      console.log('handleSaveOk')
     },
-    delByIds (ids) {
-      delUser({ ids: ids.join(',') }).then(res => {
+    delById (userId) {
+      delUser(userId).then(res => {
         if (res.code === 0) {
           this.$message.success(`删除成功`)
           this.handleOk()
         } else {
           this.$message.error(res.msg)
         }
-        // const difference = new Set(this.selectedRowKeys.filter(x => !new Set(ids).has(x)))
-        // this.selectedRowKeys = Array.from(difference)
-        this.selectedRowKeys = []
       })
     },
     onChangeStatus (record) {
       record.status = record.status === '0' ? '1' : '0'
-      changUserStatus(pick(record, 'userId', 'status')).then(res => {
+      changUserStatus(pick(record, 'id', 'status')).then(res => {
         if (res.code === 0) {
           this.$message.success('保存成功')
         } else {
           this.$message.error(res.msg)
         }
       })
-      // 发送状态到服务器
     },
     buildtree (list, arr, parentId) {
       list.forEach(item => {
         if (item.parentId === parentId) {
           var child = {
-            key: item.deptId,
-            value: item.deptId, // value是给modal的select用的，2者属性不一样
-            title: item.deptName,
+            key: item.id,
+            value: item.id, // value是给modal的select用的，2者属性不一样
+            title: item.name,
             scopedSlots: { title: 'title' },
             children: []
           }
-          this.buildtree(list, child.children, item.deptId)
+          this.buildtree(list, child.children, item.id)
           if (child.children.length === 0) { delete child.children }
           arr.push(child)
         }

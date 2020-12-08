@@ -1,7 +1,7 @@
 import { axios } from '@/utils/request'
 
 const deptApi = {
-  dept: '/system/dept'
+  deptTree: '/system/dept/tree'
 }
 
 export default deptApi
@@ -14,9 +14,9 @@ export function getDeptList (parameter) {
     params: parameter
   })
 }
-export function getDeptListEnable (parameter) {
+export function getDeptTree (parameter) {
   return axios({
-    url: deptApi.dept + '/list/enable',
+    url: deptApi.deptTree,
     method: 'get',
     params: parameter
   })

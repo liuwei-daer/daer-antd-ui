@@ -45,7 +45,7 @@ const user = {
     Login ({ commit }, userInfo) {
       return new Promise((resolve, reject) => {
         login(userInfo).then(response => {
-          const result = response
+          const result = response.data
           storage.set(ACCESS_TOKEN, result.access_token, 12 * 60 * 60 * 1000)
           commit('SET_TOKEN', result.access_token)
           resolve(response)

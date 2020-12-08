@@ -1,41 +1,50 @@
 import { axios } from '@/utils/request'
 
 const api = {
-  user: '/system/user'
+  user: '/system/user',
+  userList: '/system/user/list',
+  saveUser: '/system/user/add',
+  editUser: '/system/user/update',
+  delUser: '/system/user/delete'
 }
 
 export default api
 
 export function getUserList (parameter) {
   return axios({
-    url: api.user + '/list',
-    method: 'get',
-    params: parameter
+    url: api.userList,
+    method: 'post',
+    data: parameter
   })
 }
 
-export function getUser (userId) {
+export function getUser (id) {
   return axios({
-    url: api.user + '/get/' + `${userId}`,
+    url: api.user + '/' + `${id}`,
     method: 'get'
   })
 }
 
 export function saveUser (parameter) {
   return axios({
-    url: api.user + (parameter.userId > 0 ? '/update' : '/save'),
+    url: api.saveUser,
     method: 'post',
-    data: parameter,
-    headers: {
-      'Content-Type': 'application/json;charset=UTF-8'
-    }
+    data: parameter
   })
 }
-export function delUser (parameter) {
+
+export function editUser (parameter) {
   return axios({
-    url: api.user + '/remove',
+    url: api.editUser,
     method: 'post',
-    params: parameter
+    data: parameter
+  })
+}
+
+export function delUser (id) {
+  return axios({
+    url: api.delUser + '/' + `${id}`,
+    method: 'delete'
   })
 }
 export function changUserStatus (parameter) {

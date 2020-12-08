@@ -11,7 +11,8 @@ const request = axios.create({
   baseURL: baseURL, // api base_url
   timeout: 6000 // 请求超时时间
 })
-export const pureAxios = axios.create({
+
+export const loginAxios = axios.create({
   baseURL: baseURL, // api base_url
   timeout: 6000 // 请求超时时间
 })
@@ -49,14 +50,7 @@ request.interceptors.request.use(config => {
   if (token) {
     config.headers['Authorization'] = 'Bearer ' + token
   }
-  return config
-}, err)
-
-pureAxios.interceptors.request.use(config => {
-  const token = storage.get(ACCESS_TOKEN)
-  if (token) {
-    config.headers['Authorization'] = 'Bearer ' + token
-  }
+  config.headers['Content-Type'] = 'application/json;charset=UTF-8'
   return config
 }, err)
 

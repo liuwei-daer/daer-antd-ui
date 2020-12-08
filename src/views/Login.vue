@@ -18,10 +18,10 @@
         <a-input
           size="large"
           type="text"
-          placeholder="账户: admin"
+          placeholder="账户"
           v-decorator="[
             'username',
-            {initialValue:'admin',rules: [{ required: true, message: '请输入帐户名或邮箱地址' }, { validator: handleUsernameOrEmail }], validateTrigger: 'change'}
+            {initialValue:'admin',rules: [{ required: true, message: '请输入帐户名' }], validateTrigger: 'change'}
           ]"
         >
           <a-icon slot="prefix" type="user" :style="{ color: 'rgba(0,0,0,.25)' }" />
@@ -31,23 +31,14 @@
       <a-form-item>
         <a-input-password
           size="large"
-          placeholder="密码: 123456"
+          placeholder="密码"
           v-decorator="[
             'password',
-            { initialValue:'123456',rules: [{ required: true, message: '请输入密码' }], validateTrigger: 'blur'}
+            { initialValue:'',rules: [{ required: true, message: '请输入密码' }], validateTrigger: 'blur'}
           ]"
         >
           <a-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }" />
         </a-input-password>
-      </a-form-item>
-
-      <a-form-item>
-        <a-checkbox v-decorator="['rememberMe', { valuePropName: 'checked' }]">自动登录</a-checkbox>
-        <router-link
-          :to="{ name: 'recover', params: { user: 'aaa'} }"
-          class="forge-password"
-          style="float: right;"
-        >忘记密码</router-link>
       </a-form-item>
 
       <a-form-item style="margin-top:24px">
@@ -62,41 +53,20 @@
       </a-form-item>
 
     </a-form>
-
-    <!-- <Verify
-      @success="capctchaCheckSucc"
-      :mode="'pop'"
-      :captchaType="'blockPuzzle'"
-      :imgSize="{ width: '330px', height: '155px' }"
-      ref="verify"
-    ></Verify> -->
   </div>
 </template>
 
 <script>
-// import TwoStepCaptcha from '@/components/tools/TwoStepCaptcha'
-// import Verify from '@/components/verifition/Verify'
 import { mapActions } from 'vuex'
 import { timeFix } from '@/utils/util'
-// eslint-disable-next-line no-unused-vars
-// import md5 from 'md5'
-// eslint-disable-next-line no-unused-vars
-// import { getSmsCaptcha, get2step } from '@/api/login'
 
 export default {
-  components: {
-    // TwoStepCaptcha,
-    // Verify
-  },
   data () {
     return {
-      capctchaCheck: false,
       verify: '',
       loginBtn: false,
       isLoginError: false,
       errorMsg: '',
-      requiredTwoStepCaptcha: false,
-      stepCaptchaVisible: false,
       form: this.$form.createForm(this),
       state: {
         time: 60,
@@ -109,34 +79,11 @@ export default {
   methods: {
     ...mapActions(['Login', 'Logout']),
     // handler
-    handleUsernameOrEmail (rule, value, callback) {
-      const { state } = this
-      const regex = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/
-      if (regex.test(value)) {
-        state.loginType = 0
-      } else {
-        state.loginType = 1
-      }
-      callback()
-    },
-    handleTabClick (key) {
-      this.customActiveKey = key
-      // this.form.resetFields()
-    },
-    capctchaCheckSucc (data) {
-      this.capctchaCheck = true
-      this.verify = data.captchaVerification
-      this.loginForm()
-    },
     handleSubmit (e) {
       e.preventDefault()
       this.loginForm()
     },
     loginForm () {
-      // if (!this.capctchaCheck) {
-      //   this.$refs.verify.show()
-      //   return false
-      // }
       const {
         form: { validateFields },
         state,
@@ -150,9 +97,6 @@ export default {
       validateFields(validateFieldsKey, { force: true }, (err, values) => {
         if (!err) {
           const loginParams = { ...values }
-          // loginParams.password = md5(values.password)
-          // const captchaVO = { captchaVerification: this.verify }
-          // loginParams.captchaVO = captchaVO
           Login(loginParams)
             .then(res => this.loginSuccess(res))
             .catch(err => this.requestFailed(err))
@@ -165,17 +109,6 @@ export default {
             state.loginBtn = false
           }, 600)
         }
-      })
-    },
-    getCaptcha (e) {
-    },
-    stepCaptchaSuccess () {
-      this.loginSuccess()
-    },
-    stepCaptchaCancel () {
-      this.Logout().then(() => {
-        this.loginBtn = false
-        this.stepCaptchaVisible = false
       })
     },
     loginSuccess (res) {

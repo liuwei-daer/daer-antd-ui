@@ -65,7 +65,6 @@ export default {
       this.visible = true
       this.$nextTick(() => {
         this.form.setFieldsValue(pick(this.mdl, 'userId', 'loginName'))
-        // this.form.setFieldsValue({ ...record })
       })
     },
     handleSubmit (e) {
@@ -90,20 +89,6 @@ export default {
         }
       })
     }
-  },
-  watch: {
-    /*
-      'selectedRows': function (selectedRows) {
-        this.needTotalList = this.needTotalList.map(item => {
-          return {
-            ...item,
-            total: selectedRows.reduce( (sum, val) => {
-              return sum + val[item.dataIndex]
-            }, 0)
-          }
-        })
-      }
-      */
   }
 }
 </script>
