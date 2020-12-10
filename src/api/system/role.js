@@ -1,7 +1,8 @@
 import { axios } from '@/utils/request'
 
 const roleApi = {
-  role: '/system/role'
+  role: '/system/role',
+  roleList: '/system/role/list'
 }
 
 export default roleApi
@@ -9,9 +10,9 @@ export default roleApi
 // role
 export function getRoleList (parameter) {
   return axios({
-    url: roleApi.role + '/list',
-    method: 'get',
-    params: parameter
+    url: roleApi.roleList,
+    method: 'post',
+    data: parameter
   })
 }
 export function getRoleAll () {
@@ -51,5 +52,20 @@ export function authDataScope (parameter) {
     url: roleApi.role + '/authDataScope',
     method: 'post',
     data: parameter
+  })
+}
+
+export function getRolePermIds (roleId) {
+  return axios({
+    url: roleApi.role + '/role/' + `${roleId}`,
+    method: 'get'
+  })
+}
+
+export function getPermissions (parameter) {
+  return axios({
+    url: roleApi.role + '/list',
+    method: 'get',
+    params: parameter
   })
 }

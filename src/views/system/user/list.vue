@@ -52,14 +52,30 @@
             {{ text | sexFilter }}
           </span>
           <span slot="status" slot-scope="text,record">
-            <a-switch checked-children="启用" un-checked-children="禁用" :checked="record.status=='0'" @change="onChangeStatus(record)"/>
+            <a-popconfirm
+              v-if="removeEnable"
+              :title="record.status === '0' ? '是否禁用' : '是否启用'"
+              ok-text="确定"
+              cancel-text="取消"
+              @confirm="onChangeStatus(record)"
+            >
+              <a-switch checked-children="启用" un-checked-children="禁用" :checked="record.status=='0'" />
+            </a-popconfirm>
           </span>
           <span slot="action" slot-scope="text, record">
             <a v-if="editEnabel" @click="handleEdit(record)">编辑</a>
-            <a-divider type="vertical" />
-            <a v-if="removeEnable" @click="delById([record.userId])">删除</a>
-            <a-divider type="vertical" />
+            <a-divider v-if="editEnabel" type="vertical" />
             <a v-if="resetPwdEnabel" @click="resetPwd(record)">重置密码</a>
+            <a-divider v-if="resetPwdEnabel" type="vertical" />
+            <a-popconfirm
+              v-if="removeEnable"
+              title="确认删除该用户"
+              ok-text="确定"
+              cancel-text="取消"
+              @confirm="delById([record.userId])"
+            >
+              <a >删除</a>
+            </a-popconfirm>
           </span>
         </s-table>
       </a-col>
@@ -196,9 +212,9 @@ export default {
     },
     onChangeStatus (record) {
       record.status = record.status === '0' ? '1' : '0'
-      changUserStatus(pick(record, 'id', 'status')).then(res => {
+      changUserStatus(pick(record, 'userId', 'status')).then(res => {
         if (res.code === 0) {
-          this.$message.success('保存成功')
+          // this.$message.success('修改状态成功')
         } else {
           this.$message.error(res.msg)
         }

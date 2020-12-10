@@ -14,8 +14,7 @@ export const defaultRouterMap = [
       'title': 'menu.dashboard.weclome',
       'key': 'weclome',
       'icon': ''
-    }
-    ]
+    }]
   }
 ]
 

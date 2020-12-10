@@ -2,7 +2,7 @@ import { loadLanguageAsync } from '@/locales'
 
 const i18n = {
   state: {
-    lang: 'en-US'
+    lang: 'zh-CN'
   },
   mutations: {
     SET_LANG: (state, lang) => {

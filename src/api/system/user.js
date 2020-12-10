@@ -4,8 +4,10 @@ const api = {
   user: '/system/user',
   userList: '/system/user/list',
   saveUser: '/system/user/add',
-  editUser: '/system/user/update',
-  delUser: '/system/user/delete'
+  editUser: '/system/user/edit',
+  delUser: '/system/user/delete',
+  changeStatus: '/system/user/changeStatus',
+  resetPwd: '/system/user/resetPwd'
 }
 
 export default api
@@ -49,14 +51,14 @@ export function delUser (id) {
 }
 export function changUserStatus (parameter) {
   return axios({
-    url: api.user + '/status',
+    url: api.changeStatus,
     method: 'post',
     data: parameter
   })
 }
 export function resetPwd (parameter) {
   return axios({
-    url: api.user + '/resetPwd',
+    url: api.resetPwd,
     method: 'post',
     data: parameter
   })

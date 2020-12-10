@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    title="操作"
+    :title="isAdd ? '新增':'编辑'"
     style="top: 20px;"
     :width="700"
     v-model="visible"
@@ -17,7 +17,16 @@
           :wrapperCol="wrapperCol"
           label="用户名"
         >
-          <a-input placeholder="用户名" v-decorator="['username', {rules: [{ required: true, message: '请输入用户名' }]}]" />
+          <a-input placeholder="用户名" :disabled="!isAdd" v-decorator="['userName', {rules: [{ required: true, message: '请输入用户名' }]}]" />
+        </a-form-item>
+
+        <a-form-item
+          v-if="isAdd"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="用户密码"
+        >
+          <a-input-password placeholder="用户密码" v-decorator="['password', {rules: [{ required: true, message: '请输入用户密码' }]}]" />
         </a-form-item>
 
         <a-form-item
@@ -129,10 +138,9 @@ export default {
       roleAll: [],
       mdl: {},
       spinning: false,
+      isAdd: true,
       form: this.$form.createForm(this)
     }
-  },
-  beforeCreate () {
   },
   created () {
     this.loadRoleAll()
@@ -140,20 +148,22 @@ export default {
   methods: {
     add () {
       this.form.resetFields()
-      this.mdl = Object.assign({}, { userId: 0, deptId: '' })
+      this.mdl = Object.assign({}, { userId: 0, deptId: '', password: '' })
       this.visible = true
+      this.isAdd = true
       this.$nextTick(() => {
-        this.form.setFieldsValue(pick(this.mdl, 'userId', 'username', 'deptId', 'email', 'sex', 'status', 'roles', 'remark'))
+        this.form.setFieldsValue(pick(this.mdl, 'userId', 'userName', 'deptId', 'email', 'sex', 'status', 'roles', 'remark'))
       })
     },
     edit (record) {
       if (record.userId > 0) {
         this.spinning = true
+        this.isAdd = false
         getUser(record.userId).then(res => {
           this.mdl = Object.assign({}, res.data)
           this.visible = true
           this.$nextTick(() => {
-            this.form.setFieldsValue(pick(this.mdl, 'userId', 'username', 'deptId', 'email', 'sex', 'status', 'roles', 'remark'))
+            this.form.setFieldsValue(pick(this.mdl, 'userId', 'userName', 'deptId', 'email', 'sex', 'status', 'roles', 'remark'))
             this.spinning = false
           })
         })
@@ -169,12 +179,10 @@ export default {
       this.form.validateFields((err, values) => {
         if (!err) {
           this.confirmLoading = true
-          if (values.userId > 0) {
-            console.log('修改用户：')
+          if (this.isAdd) {
             this.addUser(values)
           } else {
-            console.log('新增用户')
-            this.addUser(values)
+            this.updateUser(values)
           }
         }
       })
@@ -193,22 +201,22 @@ export default {
       }).finally(() => {
         this.confirmLoading = false
       })
+    },
+    updateUser (values) {
+      editUser(values).then(res => {
+        if (res.code === 0) {
+          this.$message.success('修改用户成功')
+          this.$emit('ok')
+          this.visible = false
+        } else {
+          this.$message.success(res.msg)
+        }
+      }).catch(() => {
+        this.$message.error('系统错误，请稍后再试')
+      }).finally(() => {
+        this.confirmLoading = false
+      })
     }
-  },
-  editUser (values) {
-    editUser(values).then(res => {
-      if (res.code === 0) {
-        this.$message.success('修改用户成功')
-        this.$emit('ok')
-        this.visible = false
-      } else {
-        this.$message.success(res.msg)
-      }
-    }).catch(() => {
-      this.$message.error('系统错误，请稍后再试')
-    }).finally(() => {
-      this.confirmLoading = false
-    })
   }
 }
 </script>
