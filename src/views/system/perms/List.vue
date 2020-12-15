@@ -56,7 +56,7 @@
       <span slot="action" slot-scope="text, record">
         <a v-if="editEnabel" @click="handleEdit(record)">编辑</a>
         <a-divider type="vertical" />
-        <a v-if="addEnable" @click="handleAdd(record.id+'')">新增</a>
+        <a v-if="addEnable" @click="handleAdd(record.permsCode)">新增</a>
         <a-divider type="vertical" />
         <a v-if="removeEnable" @click="delById(record.id)">删除</a>
       </span>
@@ -187,19 +187,9 @@ export default {
     fetch () {
       this.loading = true
       getPermsTree(Object.assign(this.queryParam)).then(res => {
-        this.data = this.buildtree(res.data)
+        this.data = res.data
         this.loading = false
       })
-    },
-    buildtree (list) {
-      list.forEach(item => {
-        if (item.children.length > 0) {
-          this.buildtree(item.children)
-        } else {
-          delete item.children
-        }
-      })
-      return list
     }
   }
 }

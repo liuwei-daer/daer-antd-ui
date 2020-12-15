@@ -32,7 +32,7 @@
     <s-table
       size="default"
       ref="table"
-      rowKey="roleId"
+      rowKey="id"
       :columns="columns"
       :data="loadData"
       defaultSort="createTime"
@@ -50,13 +50,14 @@
       </span>
       <span slot="action" slot-scope="text, record">
         <a v-if="editEnabel" @click="handleEdit(record)">编辑</a>
-        <a-divider type="vertical" />
-        <a v-if="editEnabel" @click="handleScope(record)">授权</a>
-        <a-divider type="vertical" />
-        <a v-if="removeEnable" @click="delRoleById([record.roleId])">删除</a>
+        <a-divider v-if="editEnabel" type="vertical" />
+        <a v-if="gantfunEnabel" @click="handleGantfun([record.id])">授权</a>
+        <a-divider v-if="gantfunEnabel" type="vertical" />
+        <a v-if="removeEnable" @click="delRoleById([record.id])">删除</a>
       </span>
     </s-table>
     <role-modal ref="modal" @ok="handleOk" />
+    <role-gantfun-modal ref="gantfunmodal" @ok="handleOk" />
   </a-card>
 </template>
 
@@ -64,13 +65,15 @@
 import { STable } from '@/components'
 import { getRoleList, delRole, changRoleStatus } from '@/api/system/role'
 import RoleModal from './RoleModal.vue'
+import RoleGantfunModal from './RoleGantfunModal.vue'
 import pick from 'lodash.pick'
 import { checkPermission } from '@/utils/permissions'
 export default {
   name: 'RoleList',
   components: {
     STable,
-    RoleModal
+    RoleModal,
+    RoleGantfunModal
   },
   data () {
     return {
@@ -121,7 +124,6 @@ export default {
           scopedSlots: { customRender: 'action' }
         }
       ],
-      // 加载数据方法 必须为 Promise 对象
       loadData: parameter => {
         return getRoleList(Object.assign(parameter, this.queryParam))
       },
@@ -129,6 +131,7 @@ export default {
       selectedRows: [],
       addEnable: checkPermission('system:role:add'),
       editEnabel: checkPermission('system:role:edit'),
+      gantfunEnabel: checkPermission('system:role:gantfun'),
       removeEnable: checkPermission('system:role:remove')
     }
   },
@@ -145,8 +148,8 @@ export default {
     handleEdit (record) {
       this.$refs.modal.edit(record)
     },
-    handleScope (record) {
-      this.$refs.scopemodal.edit(record)
+    handleGantfun (roleId) {
+      this.$refs.gantfunmodal.gantfun(roleId)
     },
     onChange (selectedRowKeys, selectedRows) {
       this.selectedRowKeys = selectedRowKeys

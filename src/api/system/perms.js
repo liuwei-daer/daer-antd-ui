@@ -2,7 +2,8 @@ import { axios } from '@/utils/request'
 
 const permsApi = {
   permission: '/system/perms',
-  tree: '/system/perms/tree'
+  tree: '/system/perms/tree',
+  selTree: '/system/perms/selTree'
 
 }
 
@@ -21,6 +22,12 @@ export function getPermsTree (parameter) {
     url: permsApi.tree,
     method: 'post',
     data: parameter
+  })
+}
+export function getPermsSelTree () {
+  return axios({
+    url: permsApi.selTree,
+    method: 'post'
   })
 }
 export function getRolePermIds (roleId) {

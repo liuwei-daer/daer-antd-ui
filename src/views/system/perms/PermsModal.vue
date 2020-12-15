@@ -2,7 +2,7 @@
   <a-modal title="操作" style="top: 20px;" :width="800" v-model="visible" @ok="handleSubmit">
     <a-form :form="form">
       <a-form-item style="display:none">
-        <a-input v-decorator="['menuId']" />
+        <a-input v-decorator="['id']" />
       </a-form-item>
       <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="上级权限">
         <a-tree-select
@@ -16,8 +16,8 @@
 
       <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="菜单类型">
         <a-select
-          v-decorator="['menuType', {initialValue:'M',rules: [{ required: true, message: '请选择类型' }]}]"
-          @select="menuTypeChange"
+          v-decorator="['permsType', {initialValue:'M',rules: [{ required: true, message: '请选择类型' }]}]"
+          @select="permsTypeChange"
         >
           <a-select-option :value="'M'">目录</a-select-option>
           <a-select-option :value="'C'">菜单</a-select-option>
@@ -27,26 +27,26 @@
 
       <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="权限名称">
         <a-input
-          v-decorator="['menuName',{rules: [{ required: true, message: '请输入权限名称' }]}]"
+          v-decorator="['permsName',{rules: [{ required: true, message: '请输入权限名称' }]}]"
           placeholder="起一个名字"
         />
       </a-form-item>
 
       <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="路由唯一键">
         <a-input
-          v-decorator="['menuKey',{initialValue:'',rules: [{ required: true, message: '请输入动态菜单唯一键' }]}]"
-          placeholder="路由唯一键：如'user'"
+          v-decorator="['permsKey',{initialValue:'',rules: [{ required: true, message: '请输入动态菜单唯一键' }]}]"
+          placeholder="路由唯一键"
         />
       </a-form-item>
 
-      <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" v-show="menuType!='M'" label="权限标识">
+      <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" v-show="permsType!='M'" label="权限标识">
         <a-input
           v-decorator="['perms',{rules: [{ required: false, message: '请输入权限标识' }]}]"
           placeholder="权限标识"
         />
       </a-form-item>
 
-      <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" v-show="menuType!=='F'">
+      <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" v-show="permsType!=='F'">
         <span slot="label">
           组件
           <a-tooltip title="routerUtil中定义的组件或views文件下的路径">
@@ -59,7 +59,7 @@
         />
       </a-form-item>
 
-      <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" v-show="menuType!=='F'" label="图标">
+      <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" v-show="permsType!=='F'" label="图标">
         <a-input
           v-decorator="['icon',{rules: [{ required: false, message: '请选择图标' }]}]"
           ref="iconInput"
@@ -72,7 +72,7 @@
         </a-input>
       </a-form-item>
 
-      <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" v-show="menuType==='C'" label="打开方式">
+      <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" v-show="permsType==='C'" label="打开方式">
         <a-select
           v-decorator="['target', {initialValue:'',rules: [{ required: false, message: '请选择打开方式' },{validator: validatePathTarget}]}]"
         >
@@ -81,7 +81,7 @@
         </a-select>
       </a-form-item>
 
-      <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" v-show="menuType==='C'">
+      <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" v-show="permsType==='C'">
         <span slot="label">
           链接地址
           <a-tooltip title="链接地址为外链时，打开方式必须为新窗口（antd限制）">
@@ -101,7 +101,7 @@
       <a-form-item
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
-        v-show="menuType!=='F'"
+        v-show="permsType!=='F'"
         label="重定向地址"
       >
         <a-input
@@ -113,13 +113,13 @@
       <a-form-item
         :labelCol="labelCol"
         :wrapperCol="wrapperCol"
-        v-show="menuType!=='F'"
+        v-show="permsType!=='F'"
         label="隐藏子菜单"
       >
         <a-switch v-decorator="['hiddenChildren',{initialValue:false,valuePropName:'checked'}]" />
       </a-form-item>
 
-      <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" v-show="menuType!=='F'">
+      <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" v-show="permsType!=='F'">
         <span slot="label">
           隐藏头部信息
           <a-tooltip title="隐藏 PageHeader 组件中的页面带的 面包屑和页面标题栏">
@@ -149,7 +149,7 @@
   </a-modal>
 </template>
 <script>
-import { getPermsTree, savePerm } from '@/api/system/perms'
+import { getPermsSelTree, savePerm } from '@/api/system/perms'
 import pick from 'lodash.pick'
 import IconSelectorModal from '@/views/modules/IconSelectorModal.vue'
 export default {
@@ -172,17 +172,16 @@ export default {
       permissions: [{ key: 0, value: '0', title: '无' }],
       mdl: {},
       icon: 'smile',
-      menuType: '',
+      permsType: '',
       form: this.$form.createForm(this)
     }
   },
-  beforeCreate () {},
   created () {
     this.loadPermissions()
   },
   methods: {
-    menuTypeChange (type) {
-      this.menuType = type
+    permsTypeChange (type) {
+      this.permsType = type
     },
     emitEmpty () {
       this.$refs.iconInput.focus()
@@ -197,28 +196,29 @@ export default {
     },
     add (parentCode) {
       this.form.resetFields()
-      this.edit({ parentCode: parentCode || '0' })
+      this.edit({ parentCode: parentCode || 'A01' })
     },
     edit (record) {
       this.mdl = Object.assign({}, record)
       this.visible = true
-      this.menuType = this.mdl.menuType || 'M'
+      this.permsType = this.mdl.permsType || 'M'
       this.$nextTick(() => {
         this.mdl.icon ? (this.icon = this.mdl.icon) : (this.icon = 'smile')
-        this.mdl.parentId += ''
+        // this.mdl.parentCode += ''
         this.form.setFieldsValue(
           pick(
             this.mdl,
-            'icon',
-            'menuId',
-            'parentId',
-            'menuType',
+            'id',
+            'permsCode',
+            'parentCode',
+            'permsType',
             'visible',
+            'icon',
             'perms',
             'target',
             'orderNum',
-            'menuName',
-            'menuKey',
+            'permsName',
+            'permsKey',
             'component',
             'path',
             'redirect',
@@ -226,7 +226,6 @@ export default {
             'hiddenHeader'
           )
         )
-        // this.form.setFieldsValue({ ...record })
       })
     },
     validatePathTarget (rule, value, callback) {
@@ -238,23 +237,19 @@ export default {
       }
     },
     loadPermissions () {
-      getPermsTree({}).then(res => {
-        this.buildtree(res.data, this.permissions, 0)
+      getPermsSelTree({}).then(res => {
+        this.permissions = res.data
       })
     },
-    buildtree (list, arr, parentCode) {
+    buildtree (list) {
       list.forEach(item => {
-        if (item.parentCode === parentCode) {
-          var child = {
-            key: item.id,
-            value: item.id + '',
-            title: item.permsName,
-            children: []
-          }
-          this.buildtree(list, child.children, item.permsCode)
-          arr.push(child)
+        if (item.children.length > 0) {
+          this.buildtree(item.children)
+        } else {
+          delete item.children
         }
       })
+      return list
     },
     handleSubmit (e) {
       e.preventDefault()
@@ -262,22 +257,19 @@ export default {
         if (!err) {
           console.log('Received values of form: ', values)
           this.confirmLoading = true
-          savePerm(values)
-            .then(res => {
-              if (res.code === 0) {
-                this.$message.success('保存成功')
-                this.$emit('ok')
-                this.visible = false
-              } else {
-                this.$message.success(res.msg)
-              }
-            })
-            .catch(() => {
-              this.$message.error('系统错误，请稍后再试')
-            })
-            .finally(() => {
-              this.confirmLoading = false
-            })
+          savePerm(values).then(res => {
+            if (res.code === 0) {
+              this.$message.success('保存成功')
+              this.$emit('ok')
+              this.visible = false
+            } else {
+              this.$message.success(res.msg)
+            }
+          }).catch(() => {
+            this.$message.error('系统错误，请稍后再试')
+          }).finally(() => {
+            this.confirmLoading = false
+          })
         }
       })
     }
